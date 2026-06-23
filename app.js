@@ -126,25 +126,14 @@ function loadFromUrlInput () {
 
 function loadImageFromUrl (url) {
   const img = new Image();
-  img.crossOrigin = 'anonymous';
   img.onload = () => {
-    // Test that the canvas won't be tainted by drawing a 1x1 sample
-    const test = document.createElement('canvas');
-    test.width = test.height = 1;
-    try {
-      test.getContext('2d').drawImage(img, 0, 0, 1, 1);
-      test.getContext('2d').getImageData(0, 0, 1, 1);
-    } catch {
-      setUrlError('This image blocked cross-origin access (CORS). Try downloading it and using "Choose File" instead.');
-      return;
-    }
     setUrlError('');
     $('image-url-input').value = '';
     if (state.imageUrl && state.imageUrl.startsWith('blob:')) URL.revokeObjectURL(state.imageUrl);
     state.imageUrl = url;
     onImageLoaded(img);
   };
-  img.onerror = () => setUrlError('Could not load image. Check the URL and try again.');
+  img.onerror = () => setUrlError('Could not load image. The URL may be broken or the server may block direct linking.');
   img.src = url;
 }
 
