@@ -346,6 +346,19 @@ html, body {
   font-size: 1rem;
 }
 
+#mobile-pick-btn {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  #mobile-pick-btn {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    padding: 0.6rem 1.5rem;
+  }
+}
+
 #canvas-wrapper {
   position: relative;
   line-height: 0;
@@ -452,24 +465,159 @@ html, body {
   font-style: italic;
 }
 
-/* ── Responsive: collapse sidebar on small screens ──────────────────────── */
-@media (max-width: 600px) {
+/* ── Mobile bar (hidden on desktop) ─────────────────────────────────────── */
+#mobile-bar {
+  display: none;
+}
+
+#drawer-overlay {
+  display: none;
+}
+
+/* ── Mobile layout ──────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+
+  /* App shell: canvas fills the whole screen */
   #app {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr;
+    height: 100dvh;
   }
 
+  /* Canvas area fills everything; bottom padding reserves space for mobile bar */
+  #canvas-area {
+    grid-row: 1;
+    height: 100dvh;
+    padding-bottom: 64px;
+  }
+
+  /* Upload zone: full-screen centered card */
+  #canvas-area #canvas-placeholder {
+    padding: 2rem;
+  }
+
+  /* Sidebar becomes a bottom drawer */
   #sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    height: auto;
+    max-height: 80dvh;
     border-right: none;
-    border-bottom: 1px solid var(--pico-muted-border-color);
-    flex-direction: row;
-    flex-wrap: wrap;
-    overflow-x: auto;
-    overflow-y: visible;
-    padding: 0.5rem;
-    gap: 0.5rem;
+    border-top: 1px solid var(--pico-muted-border-color);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+    overflow-y: auto;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   }
 
-  #sidebar header { display: none; }
-  #upload-zone { flex: unset; width: 100%; }
+  #sidebar.drawer-open {
+    transform: translateY(0);
+  }
+
+  /* Drag handle at top of drawer */
+  #sidebar::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--pico-muted-border-color);
+    border-radius: 2px;
+    margin: 0.6rem auto 0.75rem;
+  }
+
+  /* Hide desktop-only sidebar elements */
+  #sidebar header,
+  #upload-zone,
+  #help-text {
+    display: none;
+  }
+
+  /* Upload zone on mobile: full canvas area */
+  #canvas-area > #canvas-placeholder {
+    text-align: center;
+  }
+
+  /* Status bar at TOP on mobile so it's not covered by bottom bar */
+  #status-bar {
+    top: 0;
+    bottom: auto;
+  }
+
+  /* Backdrop overlay */
+  #drawer-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 199;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  #drawer-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Mobile bottom bar */
+  #mobile-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--pico-background-color);
+    border-top: 1px solid var(--pico-muted-border-color);
+    padding: 0.5rem 1rem;
+    padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  #mobile-bar .mode-btn {
+    flex: 1;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  #mobile-cal-indicator {
+    padding: 0 0.25rem;
+    display: flex;
+    align-items: center;
+  }
+
+  #btn-drawer-toggle {
+    background: none;
+    border: 1.5px solid var(--pico-muted-border-color);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    color: var(--pico-color);
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  /* Mobile upload zone inside canvas area */
+  #canvas-area {
+    position: relative;
+  }
+
+  #mobile-upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    height: 100%;
+    padding: 2rem;
+  }
 }

@@ -86,6 +86,12 @@ function init () {
 
   $('image-url-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrlInput(); });
 
+  // Mobile bar
+  $('mbtn-calibrate').addEventListener('click', () => { setMode('calibrate'); closeDrawer(); });
+  $('mbtn-measure').addEventListener('click',   () => { setMode('measure');   closeDrawer(); });
+  $('btn-drawer-toggle').addEventListener('click', toggleDrawer);
+  $('drawer-overlay').addEventListener('click',   closeDrawer);
+
   $('cal-confirm').addEventListener('click', onCalibrationConfirm);
   $('cal-cancel').addEventListener('click',  onCalibrationCancel);
   $('calibration-dialog').addEventListener('cancel', onCalibrationCancel);
@@ -163,6 +169,7 @@ function onImageLoaded (img) {
   $('controls').hidden           = false;
   $('canvas-placeholder').hidden = true;
   $('canvas-wrapper').hidden     = false;
+  $('mobile-bar').hidden         = false;
 
   fitImageToCanvas();
   render();
@@ -532,6 +539,8 @@ function resetToNewImage () {
   $('controls').hidden           = true;
   $('canvas-placeholder').hidden = false;
   $('canvas-wrapper').hidden     = true;
+  $('mobile-bar').hidden         = true;
+  closeDrawer();
   $('file-input').value        = '';
   $('image-url-input').value   = '';
   setUrlError('');
@@ -672,18 +681,45 @@ function getLiveLabel () {
 
 // ── DOM updates ───────────────────────────────────────────────────────────────
 
+// ── Mobile drawer ─────────────────────────────────────────────────────────────
+
+function isMobile () {
+  return window.matchMedia('(max-width: 700px)').matches;
+}
+
+function toggleDrawer () {
+  const open = $('sidebar').classList.contains('drawer-open');
+  open ? closeDrawer() : openDrawer();
+}
+
+function openDrawer () {
+  $('sidebar').classList.add('drawer-open');
+  $('drawer-overlay').classList.add('visible');
+  $('drawer-overlay').hidden = false;
+}
+
+function closeDrawer () {
+  $('sidebar').classList.remove('drawer-open');
+  $('drawer-overlay').classList.remove('visible');
+  setTimeout(() => { $('drawer-overlay').hidden = true; }, 300);
+}
+
 function setMode (mode) {
   state.mode = mode;
-  $('btn-calibrate').classList.toggle('active', mode === 'calibrate');
-  $('btn-measure').classList.toggle('active',   mode === 'measure');
+  $('btn-calibrate').classList.toggle('active',  mode === 'calibrate');
+  $('btn-measure').classList.toggle('active',    mode === 'measure');
+  $('mbtn-calibrate').classList.toggle('active', mode === 'calibrate');
+  $('mbtn-measure').classList.toggle('active',   mode === 'measure');
   setStatusBar(modeHint());
 }
 
 function updateCalibrationStatus () {
-  const calibrated = state.pixelsPerUnit > 0;
-  $('cal-dot').className    = 'dot ' + (calibrated ? 'calibrated' : 'uncalibrated');
-  $('cal-text').textContent = calibrated ? formatScale() : 'Not calibrated';
-  $('btn-edit-scale').hidden = !calibrated;
+  const calibrated  = state.pixelsPerUnit > 0;
+  const dotClass    = 'dot ' + (calibrated ? 'calibrated' : 'uncalibrated');
+  $('cal-dot').className        = dotClass;
+  $('mobile-cal-dot').className = dotClass;
+  $('cal-text').textContent     = calibrated ? formatScale() : 'Not calibrated';
+  $('btn-edit-scale').hidden    = !calibrated;
 }
 
 function formatScale () {
