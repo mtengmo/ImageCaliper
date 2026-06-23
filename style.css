@@ -1,0 +1,404 @@
+/* ── Reset / base ───────────────────────────────────────────────────────── */
+:root {
+  --color-calibrate: #ef4444;
+  --color-measure:   #22c55e;
+  --color-hover:     #86efac;
+  --color-bg-canvas: #111827;
+  --sidebar-width:   280px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── App shell ──────────────────────────────────────────────────────────── */
+#app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--pico-muted-border-color);
+  padding: 1rem;
+  background: var(--pico-background-color);
+}
+
+#sidebar header {
+  padding: 0;
+  margin: 0;
+  background: none;
+}
+
+#sidebar header h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.02em;
+}
+
+/* ── Upload zone ────────────────────────────────────────────────────────── */
+#upload-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+#drop-target {
+  width: 100%;
+  border: 2px dashed var(--pico-muted-border-color);
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--pico-muted-color);
+}
+
+#drop-target svg {
+  opacity: 0.5;
+}
+
+#drop-target p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+#drop-target .muted {
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+#drop-target label[role="button"] {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  padding: 0.35rem 1rem;
+  cursor: pointer;
+}
+
+#drop-target.drag-over {
+  border-color: var(--pico-primary);
+  background: color-mix(in srgb, var(--pico-primary) 8%, transparent);
+  color: var(--pico-primary);
+}
+
+#file-input {
+  display: none;
+}
+
+/* ── Mode buttons ───────────────────────────────────────────────────────── */
+#mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  --pico-background-color: transparent;
+  border: 1.5px solid var(--pico-muted-border-color);
+  color: var(--pico-muted-color);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.mode-btn.active[data-mode="calibrate"],
+#btn-calibrate.active {
+  border-color: var(--color-calibrate);
+  color: var(--color-calibrate);
+  background: color-mix(in srgb, var(--color-calibrate) 10%, transparent);
+}
+
+.mode-btn.active[data-mode="measure"],
+#btn-measure.active {
+  border-color: var(--color-measure);
+  color: var(--color-measure);
+  background: color-mix(in srgb, var(--color-measure) 10%, transparent);
+}
+
+.mode-btn:not(.active):hover {
+  border-color: var(--pico-color);
+  color: var(--pico-color);
+}
+
+/* ── Calibration status ─────────────────────────────────────────────────── */
+#calibration-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--pico-muted-color);
+  padding: 0.3rem 0;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.dot.uncalibrated { background: var(--color-calibrate); opacity: 0.5; }
+.dot.calibrated   { background: var(--color-measure); }
+
+#btn-edit-scale {
+  background: none;
+  border: none;
+  color: var(--pico-muted-color);
+  cursor: pointer;
+  padding: 0 0.25rem;
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0.6;
+  margin-left: auto;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+#btn-edit-scale:hover {
+  opacity: 1;
+  color: var(--pico-color);
+}
+
+/* ── Results list ───────────────────────────────────────────────────────── */
+#results-header {
+  margin-bottom: 0.25rem;
+  color: var(--pico-muted-color);
+}
+
+#results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.measurement-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  cursor: default;
+  transition: background 0.1s;
+  border: 1px solid transparent;
+}
+
+.measurement-row:hover {
+  background: color-mix(in srgb, var(--color-measure) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-measure) 30%, transparent);
+}
+
+.measurement-index {
+  font-size: 0.72rem;
+  color: var(--pico-muted-color);
+  min-width: 22px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.measurement-value {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-measure);
+}
+
+.measurement-delete {
+  background: none;
+  border: none;
+  color: var(--pico-muted-color);
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.measurement-row:hover .measurement-delete {
+  opacity: 1;
+}
+
+.measurement-delete:hover {
+  color: var(--color-calibrate) !important;
+  background: color-mix(in srgb, var(--color-calibrate) 12%, transparent);
+}
+
+/* ── Action buttons ─────────────────────────────────────────────────────── */
+#action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+#action-buttons button {
+  font-size: 0.82rem;
+  padding: 0.4rem 0.5rem;
+}
+
+/* ── Help text ──────────────────────────────────────────────────────────── */
+#help-text {
+  color: var(--pico-muted-color);
+  text-align: center;
+  font-size: 0.78rem;
+  padding-top: 0.25rem;
+}
+
+#controls hr {
+  margin: 0.25rem 0;
+  border-color: var(--pico-muted-border-color);
+}
+
+/* ── Canvas area ────────────────────────────────────────────────────────── */
+#canvas-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-canvas);
+  position: relative;
+  overflow: hidden;
+}
+
+#canvas-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #4b5563;
+  user-select: none;
+}
+
+#canvas-placeholder p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+#canvas-wrapper {
+  position: relative;
+  line-height: 0;
+}
+
+#main-canvas {
+  display: block;
+  cursor: crosshair;
+  max-width: 100%;
+}
+
+#status-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #e5e7eb;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Dialog ─────────────────────────────────────────────────────────────── */
+#calibration-dialog {
+  max-width: 380px;
+  width: calc(100% - 2rem);
+}
+
+#calibration-dialog article {
+  padding: 1.5rem;
+}
+
+#calibration-dialog header {
+  background: none;
+  padding: 0;
+  margin-bottom: 0.75rem;
+}
+
+#calibration-dialog h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+#calibration-dialog p {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--pico-muted-color);
+}
+
+.dialog-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.dialog-fields label {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.dialog-fields input,
+.dialog-fields select {
+  margin-top: 0.3rem;
+}
+
+#calibration-dialog footer {
+  background: none;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+#calibration-dialog footer button {
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.88rem;
+}
+
+/* ── Responsive: collapse sidebar on small screens ──────────────────────── */
+@media (max-width: 600px) {
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  #sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  #sidebar header { display: none; }
+  #upload-zone { flex: unset; width: 100%; }
+}
