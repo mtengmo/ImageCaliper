@@ -84,6 +84,9 @@ function init () {
   $('btn-new-image').addEventListener('click',  resetToNewImage);
   $('btn-edit-scale').addEventListener('click', openEditScaleDialog);
 
+  $('btn-load-url').addEventListener('click',  loadFromUrlInput);
+  $('image-url-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrlInput(); });
+
   $('cal-confirm').addEventListener('click', onCalibrationConfirm);
   $('cal-cancel').addEventListener('click',  onCalibrationCancel);
   $('calibration-dialog').addEventListener('cancel', onCalibrationCancel);
@@ -115,25 +118,67 @@ function handleFileSelect (file) {
   loadImage(URL.createObjectURL(file));
 }
 
+function loadFromUrlInput () {
+  const url = $('image-url-input').value.trim();
+  if (!url) return;
+  setUrlError('');
+  loadImageFromUrl(url);
+}
+
+function loadImageFromUrl (url) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    // Test that the canvas won't be tainted by drawing a 1x1 sample
+    const test = document.createElement('canvas');
+    test.width = test.height = 1;
+    try {
+      test.getContext('2d').drawImage(img, 0, 0, 1, 1);
+      test.getContext('2d').getImageData(0, 0, 1, 1);
+    } catch {
+      setUrlError('This image blocked cross-origin access (CORS). Try downloading it and using "Choose File" instead.');
+      return;
+    }
+    setUrlError('');
+    $('image-url-input').value = '';
+    if (state.imageUrl && state.imageUrl.startsWith('blob:')) URL.revokeObjectURL(state.imageUrl);
+    state.imageUrl = url;
+    onImageLoaded(img);
+  };
+  img.onerror = () => setUrlError('Could not load image. Check the URL and try again.');
+  img.src = url;
+}
+
+function setUrlError (msg) {
+  const el = $('url-error');
+  el.textContent = msg;
+  el.hidden = !msg;
+}
+
 function loadImage (src) {
   const img = new Image();
   img.onload = () => {
-    state.image         = img;
-    state.imageUrl      = src;
-    state.imageNaturalW = img.naturalWidth;
-    state.imageNaturalH = img.naturalHeight;
-
-    $('upload-zone').hidden        = true;
-    $('controls').hidden           = false;
-    $('canvas-placeholder').hidden = true;
-    $('canvas-wrapper').hidden     = false;
-
-    fitImageToCanvas();
-    render();
-    setStatusBar(modeHint());
+    if (state.imageUrl && state.imageUrl.startsWith('blob:')) URL.revokeObjectURL(state.imageUrl);
+    state.imageUrl = src;
+    onImageLoaded(img);
   };
   img.onerror = () => alert('Could not load image.');
   img.src = src;
+}
+
+function onImageLoaded (img) {
+  state.image         = img;
+  state.imageNaturalW = img.naturalWidth;
+  state.imageNaturalH = img.naturalHeight;
+
+  $('upload-zone').hidden        = true;
+  $('controls').hidden           = false;
+  $('canvas-placeholder').hidden = true;
+  $('canvas-wrapper').hidden     = false;
+
+  fitImageToCanvas();
+  render();
+  setStatusBar(modeHint());
 }
 
 function fitImageToCanvas () {
@@ -499,7 +544,9 @@ function resetToNewImage () {
   $('controls').hidden           = true;
   $('canvas-placeholder').hidden = false;
   $('canvas-wrapper').hidden     = true;
-  $('file-input').value = '';
+  $('file-input').value        = '';
+  $('image-url-input').value   = '';
+  setUrlError('');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
