@@ -84,7 +84,6 @@ function init () {
   $('btn-new-image').addEventListener('click',  resetToNewImage);
   $('btn-edit-scale').addEventListener('click', openEditScaleDialog);
 
-  $('btn-load-url').addEventListener('click',  loadFromUrlInput);
   $('image-url-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrlInput(); });
 
   $('cal-confirm').addEventListener('click', onCalibrationConfirm);

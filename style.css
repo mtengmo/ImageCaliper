@@ -4,7 +4,7 @@
   --color-measure:   #22c55e;
   --color-hover:     #86efac;
   --color-bg-canvas: #111827;
-  --sidebar-width:   280px;
+  --sidebar-width:   320px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -28,10 +28,10 @@ html, body {
 #sidebar {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   overflow-y: auto;
   border-right: 1px solid var(--pico-muted-border-color);
-  padding: 1rem;
+  padding: 1.25rem;
   background: var(--pico-background-color);
 }
 
@@ -42,7 +42,7 @@ html, body {
 }
 
 #sidebar header h1 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   margin: 0;
   display: flex;
@@ -54,42 +54,45 @@ html, body {
 #upload-zone {
   flex: 1;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
 }
 
 #drop-target {
   width: 100%;
   border: 2px dashed var(--pico-muted-border-color);
   border-radius: 12px;
-  padding: 2rem 1rem;
+  padding: 2.25rem 1.25rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   color: var(--pico-muted-color);
 }
 
 #drop-target svg {
-  opacity: 0.5;
+  opacity: 0.45;
+  margin-bottom: 0.25rem;
 }
 
 #drop-target p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 #drop-target .muted {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   opacity: 0.6;
 }
 
 #drop-target label[role="button"] {
   margin-top: 0.25rem;
-  font-size: 0.85rem;
-  padding: 0.35rem 1rem;
+  font-size: 0.88rem;
+  padding: 0.4rem 1.25rem;
   cursor: pointer;
 }
 
@@ -103,30 +106,48 @@ html, body {
   display: none;
 }
 
-#url-input-row {
+/* URL input section */
+.url-section {
   display: flex;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-#url-input-row input {
+.url-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--pico-muted-color);
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+.url-divider::before,
+.url-divider::after {
+  content: '';
   flex: 1;
-  font-size: 0.8rem;
-  padding: 0.35rem 0.5rem;
+  height: 1px;
+  background: var(--pico-muted-border-color);
+}
+
+#image-url-input {
+  width: 100%;
+  font-size: 0.88rem;
   margin: 0;
 }
 
-#url-input-row button {
-  font-size: 0.8rem;
-  padding: 0.35rem 0.75rem;
-  white-space: nowrap;
+.url-hint {
+  font-size: 0.75rem;
+  color: var(--pico-muted-color);
+  opacity: 0.65;
+  text-align: center;
   margin: 0;
 }
 
 #url-error {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--color-calibrate);
-  margin: 0.4rem 0 0;
+  margin: 0;
   line-height: 1.4;
 }
 
@@ -142,8 +163,8 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  font-size: 0.85rem;
-  padding: 0.45rem 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.5rem;
   border-radius: 8px;
   font-weight: 600;
   --pico-background-color: transparent;
@@ -177,7 +198,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--pico-muted-color);
   padding: 0.3rem 0;
 }
@@ -227,7 +248,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
+  padding: 0.45rem 0.6rem;
   border-radius: 6px;
   cursor: default;
   transition: background 0.1s;
@@ -240,16 +261,16 @@ html, body {
 }
 
 .measurement-index {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--pico-muted-color);
-  min-width: 22px;
+  min-width: 24px;
   font-family: 'JetBrains Mono', monospace;
 }
 
 .measurement-value {
   flex: 1;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-measure);
 }
@@ -284,8 +305,8 @@ html, body {
 }
 
 #action-buttons button {
-  font-size: 0.82rem;
-  padding: 0.4rem 0.5rem;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.5rem;
 }
 
 /* ── Help text ──────────────────────────────────────────────────────────── */

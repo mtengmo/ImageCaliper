@@ -32,11 +32,12 @@
           <label for="file-input" role="button" class="secondary outline">Choose File</label>
           <input type="file" id="file-input" accept="image/*">
         </div>
-        <div id="url-input-row">
-          <input type="url" id="image-url-input" placeholder="Paste image URL…" autocomplete="off" spellcheck="false">
-          <button id="btn-load-url" class="secondary">Load</button>
+        <div class="url-section">
+          <div class="url-divider">or paste a URL</div>
+          <input type="url" id="image-url-input" placeholder="https://…" autocomplete="off" spellcheck="false">
+          <p class="url-hint">Press Enter to load</p>
+          <p id="url-error" hidden></p>
         </div>
-        <p id="url-error" hidden></p>
       </section>
 
       <!-- Controls (visible after image loads) -->
