@@ -368,6 +368,7 @@ html, body {
   display: block;
   cursor: crosshair;
   max-width: 100%;
+  touch-action: none;
 }
 
 #status-bar {

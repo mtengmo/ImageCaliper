@@ -125,6 +125,11 @@ const state = {
   dragTarget: null,          // { type: 'calibration'|'measurement', id, endpoint: 'p1'|'p2' }
   dragOriginalPt: null,      // saved endpoint position for Escape cancellation
   hoveredMeasurementId: null,
+
+  // Zoom / pan (applied on top of fit-to-canvas scale)
+  zoom: 1,
+  panX: 0,   // CSS px offset of image within canvas area
+  panY: 0,
 };
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
@@ -164,9 +169,11 @@ function init () {
   canvas.addEventListener('mouseup',    onMouseUp);
   canvas.addEventListener('mouseleave', onMouseLeave);
 
-  canvas.addEventListener('touchstart',  e => { e.preventDefault(); onMouseDown(e.touches[0]); },      { passive: false });
-  canvas.addEventListener('touchmove',   e => { e.preventDefault(); onMouseMove(e.touches[0]); },      { passive: false });
-  canvas.addEventListener('touchend',    e => { e.preventDefault(); onMouseUp(e.changedTouches[0]); }, { passive: false });
+  canvas.addEventListener('touchstart',  onTouchStart, { passive: false });
+  canvas.addEventListener('touchmove',   onTouchMove,  { passive: false });
+  canvas.addEventListener('touchend',    onTouchEnd,   { passive: false });
+  canvas.addEventListener('touchcancel', onTouchEnd,   { passive: false });
+  canvas.addEventListener('wheel', onWheel, { passive: false });
 
   document.addEventListener('keydown', onKeyDown);
 
@@ -281,6 +288,9 @@ function fitImageToCanvas () {
   state.scaleX   = scale;
   state.scaleY   = scale;
   state.dpr      = window.devicePixelRatio || 1;
+  state.zoom     = 1;
+  state.panX     = 0;
+  state.panY     = 0;
 
   canvas.style.width  = state.displayW + 'px';
   canvas.style.height = state.displayH + 'px';
@@ -314,15 +324,15 @@ function onDrop (e) {
 function cssToImage (cssX, cssY) {
   const rect = canvas.getBoundingClientRect();
   return {
-    x: (cssX - rect.left) / state.scaleX,
-    y: (cssY - rect.top)  / state.scaleY,
+    x: (cssX - rect.left - state.panX) / (state.scaleX * state.zoom),
+    y: (cssY - rect.top  - state.panY) / (state.scaleY * state.zoom),
   };
 }
 
 function imageToCanvas (ix, iy) {
   return {
-    x: ix * state.scaleX * state.dpr,
-    y: iy * state.scaleY * state.dpr,
+    x: (ix * state.scaleX * state.zoom + state.panX) * state.dpr,
+    y: (iy * state.scaleY * state.zoom + state.panY) * state.dpr,
   };
 }
 
@@ -332,7 +342,7 @@ function imageToCanvas (ix, iy) {
 const HIT_RADIUS = 10;
 
 function findNearbyEndpoint (imgPt) {
-  const threshold = HIT_RADIUS / state.scaleX;
+  const threshold = HIT_RADIUS / (state.scaleX * state.zoom);
 
   if (state.calibrationLine) {
     for (const ep of ['p1', 'p2']) {
@@ -425,6 +435,129 @@ function onKeyDown (e) {
       if (last) deleteMeasurement(last.id);
     }
   }
+}
+
+// ── Touch / pinch-zoom handlers ───────────────────────────────────────────────
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 8;
+
+let pinching        = false;
+let pinchStartDist  = 0;
+let pinchStartZoom  = 1;
+let pinchStartPanX  = 0;
+let pinchStartPanY  = 0;
+let pinchImgMidX    = 0;  // image-space coord under the pinch midpoint at start
+let pinchImgMidY    = 0;
+let lastTapTime     = 0;
+
+function touchDist (t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function touchMid (t1, t2) {
+  return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+}
+
+function clampPan (zoom, panX, panY) {
+  const maxPanX = 0;
+  const minPanX = state.displayW * (1 - zoom);
+  const maxPanY = 0;
+  const minPanY = state.displayH * (1 - zoom);
+  return {
+    x: Math.min(maxPanX, Math.max(minPanX, panX)),
+    y: Math.min(maxPanY, Math.max(minPanY, panY)),
+  };
+}
+
+function applyZoomAt (newZoom, cssFocusX, cssFocusY) {
+  newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, newZoom));
+  const rect   = canvas.getBoundingClientRect();
+  const focusX = cssFocusX - rect.left;
+  const focusY = cssFocusY - rect.top;
+  // Image pixel under the focus point must stay fixed
+  const imgX   = (focusX - state.panX) / (state.scaleX * state.zoom);
+  const imgY   = (focusY - state.panY) / (state.scaleY * state.zoom);
+  const rawPanX = focusX - imgX * state.scaleX * newZoom;
+  const rawPanY = focusY - imgY * state.scaleY * newZoom;
+  const clamped = clampPan(newZoom, rawPanX, rawPanY);
+  state.zoom = newZoom;
+  state.panX = clamped.x;
+  state.panY = clamped.y;
+  render();
+}
+
+function onTouchStart (e) {
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    // Abort any ongoing draw
+    if (state.drawState !== 'idle') {
+      state.drawState   = 'idle';
+      state.currentLine = null;
+      state.dragTarget  = null;
+    }
+    pinching       = true;
+    pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+    pinchStartZoom = state.zoom;
+    pinchStartPanX = state.panX;
+    pinchStartPanY = state.panY;
+    const mid      = touchMid(e.touches[0], e.touches[1]);
+    const rect     = canvas.getBoundingClientRect();
+    pinchImgMidX   = (mid.x - rect.left - state.panX) / (state.scaleX * state.zoom);
+    pinchImgMidY   = (mid.y - rect.top  - state.panY) / (state.scaleY * state.zoom);
+  } else if (e.touches.length === 1 && !pinching) {
+    // Double-tap to reset zoom
+    const now = Date.now();
+    if (now - lastTapTime < 300) {
+      state.zoom = 1;
+      state.panX = 0;
+      state.panY = 0;
+      render();
+      lastTapTime = 0;
+      return;
+    }
+    lastTapTime = now;
+    onMouseDown(e.touches[0]);
+  }
+}
+
+function onTouchMove (e) {
+  e.preventDefault();
+  if (pinching && e.touches.length === 2) {
+    const dist    = touchDist(e.touches[0], e.touches[1]);
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartZoom * dist / pinchStartDist));
+    const mid     = touchMid(e.touches[0], e.touches[1]);
+    const rect    = canvas.getBoundingClientRect();
+    const rawPanX = (mid.x - rect.left) - pinchImgMidX * state.scaleX * newZoom;
+    const rawPanY = (mid.y - rect.top)  - pinchImgMidY * state.scaleY * newZoom;
+    const clamped = clampPan(newZoom, rawPanX, rawPanY);
+    state.zoom = newZoom;
+    state.panX = clamped.x;
+    state.panY = clamped.y;
+    render();
+  } else if (!pinching && e.touches.length === 1) {
+    onMouseMove(e.touches[0]);
+  }
+}
+
+function onTouchEnd (e) {
+  e.preventDefault();
+  if (e.touches.length < 2 && pinching) {
+    pinching = false;
+    return;
+  }
+  if (!pinching) {
+    onMouseUp(e.changedTouches[0]);
+  }
+}
+
+function onWheel (e) {
+  e.preventDefault();
+  if (!state.image) return;
+  const delta   = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+  applyZoomAt(state.zoom * delta, e.clientX, e.clientY);
 }
 
 // ── Drawing state machine ─────────────────────────────────────────────────────
@@ -644,7 +777,13 @@ function resetToNewImage () {
 function render () {
   if (!state.image) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(state.image, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(
+    state.image,
+    state.panX * state.dpr,
+    state.panY * state.dpr,
+    state.displayW * state.dpr * state.zoom,
+    state.displayH * state.dpr * state.zoom
+  );
 
   if (state.calibrationLine) {
     const isDraggingCal = state.dragTarget?.type === 'calibration';
