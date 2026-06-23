@@ -27,15 +27,15 @@
       <section id="upload-zone">
         <div id="drop-target">
           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-          <p>Drop an image here</p>
-          <p class="muted">or</p>
-          <label for="file-input" role="button" class="secondary outline">Choose File</label>
+          <p data-i18n="drop-image">Drop an image here</p>
+          <p class="muted" data-i18n="or">or</p>
+          <label for="file-input" role="button" class="secondary outline" data-i18n="choose-file">Choose File</label>
           <input type="file" id="file-input" accept="image/*">
         </div>
         <div class="url-section">
-          <div class="url-divider">or paste a URL</div>
+          <div class="url-divider" data-i18n="paste-url">or paste a URL</div>
           <input type="url" id="image-url-input" placeholder="https://…" autocomplete="off" spellcheck="false">
-          <p class="url-hint">Press Enter to load</p>
+          <p class="url-hint" data-i18n="enter-to-load">Press Enter to load</p>
           <p id="url-error" hidden></p>
         </div>
       </section>
@@ -46,11 +46,11 @@
         <div id="mode-buttons">
           <button id="btn-calibrate" class="mode-btn active" title="Draw a reference line with a known length">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Calibrate
+            <span data-i18n="calibrate">Calibrate</span>
           </button>
           <button id="btn-measure" class="mode-btn" title="Draw lines to measure distances">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="6" x2="2" y2="18"/><line x1="22" y1="6" x2="22" y2="18"/></svg>
-            Measure
+            <span data-i18n="measure">Measure</span>
           </button>
         </div>
 
@@ -63,22 +63,19 @@
         <hr>
 
         <div id="results-header" hidden>
-          <small>Measurements</small>
+          <small data-i18n="measurements">Measurements</small>
         </div>
         <div id="results-list"></div>
 
         <hr>
 
         <div id="action-buttons">
-          <button id="btn-clear" class="secondary outline" title="Remove all measurements and calibration">Clear All</button>
-          <button id="btn-new-image" class="contrast outline" title="Load a different image">New Image</button>
+          <button id="btn-clear" class="secondary outline" data-i18n="clear-all">Clear All</button>
+          <button id="btn-new-image" class="contrast outline" data-i18n="new-image">New Image</button>
         </div>
 
         <div id="help-text">
-          <small>
-            <strong>Esc</strong> — cancel line &nbsp;
-            <strong>Del</strong> — remove last
-          </small>
+          <small data-i18n-html="kbd-hint"><strong>Esc</strong> — cancel line &nbsp; <strong>Del</strong> — remove last</small>
         </div>
 
       </section>
@@ -86,7 +83,7 @@
       <footer id="privacy-notice">
         <div class="privacy-row">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          100% local — your images never leave the browser
+          <span data-i18n="privacy">100% local — your images never leave the browser</span>
         </div>
         <div class="author-row">
           By Magnus Tengmo &nbsp;·&nbsp; v1.1.0
@@ -98,9 +95,9 @@
     <main id="canvas-area">
       <div id="canvas-placeholder">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <p>Load an image to begin</p>
+        <p data-i18n="load-to-begin">Load an image to begin</p>
         <!-- shown only on mobile where sidebar upload zone is hidden -->
-        <label for="file-input" role="button" class="secondary outline" id="mobile-pick-btn">Choose Image</label>
+        <label for="file-input" role="button" class="secondary outline" id="mobile-pick-btn" data-i18n="choose-image">Choose Image</label>
       </div>
 
       <div id="canvas-wrapper" hidden>
@@ -118,11 +115,11 @@
   <div id="mobile-bar" hidden>
     <button id="mbtn-calibrate" class="mode-btn active">
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Calibrate
+      <span data-i18n="calibrate">Calibrate</span>
     </button>
     <button id="mbtn-measure" class="mode-btn">
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="6" x2="2" y2="18"/><line x1="22" y1="6" x2="22" y2="18"/></svg>
-      Measure
+      <span data-i18n="measure">Measure</span>
     </button>
     <div id="mobile-cal-indicator">
       <span id="mobile-cal-dot" class="dot uncalibrated"></span>
@@ -136,16 +133,16 @@
   <dialog id="calibration-dialog">
     <article>
       <header>
-        <h3>Set Calibration Scale</h3>
+        <h3 data-i18n="dialog-title">Set Calibration Scale</h3>
       </header>
-      <p>The line you drew is <strong><span id="dialog-pixel-length">0</span> px</strong> long in the image. Enter its real-world length to set the scale.</p>
+      <p id="dialog-desc">The line you drew is <strong><span id="dialog-pixel-length">0</span> px</strong> long in the image. Enter its real-world length to set the scale.</p>
       <div class="dialog-fields">
         <label>
-          Real-world length
+          <span data-i18n="real-length">Real-world length</span>
           <input type="number" id="cal-value" min="0.001" step="any" placeholder="e.g. 10" autofocus>
         </label>
         <label>
-          Unit
+          <span data-i18n="unit">Unit</span>
           <select id="cal-unit">
             <option value="mm">mm</option>
             <option value="cm">cm</option>
@@ -157,8 +154,8 @@
         </label>
       </div>
       <footer>
-        <button id="cal-cancel" class="secondary">Cancel</button>
-        <button id="cal-confirm">Set Scale</button>
+        <button id="cal-cancel" class="secondary" data-i18n="cancel">Cancel</button>
+        <button id="cal-confirm" data-i18n="set-scale">Set Scale</button>
       </footer>
     </article>
   </dialog>

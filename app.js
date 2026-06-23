@@ -1,5 +1,96 @@
 'use strict';
 
+// ── i18n ─────────────────────────────────────────────────────────────────────
+
+const TRANSLATIONS = {
+  en: {
+    'calibrate':       'Calibrate',
+    'measure':         'Measure',
+    'drop-image':      'Drop an image here',
+    'or':              'or',
+    'choose-file':     'Choose File',
+    'paste-url':       'or paste a URL',
+    'enter-to-load':   'Press Enter to load',
+    'load-to-begin':   'Load an image to begin',
+    'choose-image':    'Choose Image',
+    'measurements':    'Measurements',
+    'clear-all':       'Clear All',
+    'new-image':       'New Image',
+    'kbd-hint':        '<strong>Esc</strong> — cancel line &nbsp; <strong>Del</strong> — remove last',
+    'privacy':         '100% local — your images never leave the browser',
+    'dialog-title':    'Set Calibration Scale',
+    'dialog-desc':     'The line you drew is <strong><span id="dialog-pixel-length">0</span> px</strong> long in the image. Enter its real-world length to set the scale.',
+    'real-length':     'Real-world length',
+    'unit':            'Unit',
+    'cancel':          'Cancel',
+    'set-scale':       'Set Scale',
+    'not-calibrated':  'Not calibrated',
+    'scale-label':     'SCALE',
+    'hint-cal-new':    'Click and drag to draw a calibration reference line',
+    'hint-cal-exists': 'Draw a new calibration line to update the scale  |  Drag endpoints to fine-tune',
+    'hint-meas-empty': 'Click and drag to draw a measurement line  |  Drag endpoints to adjust',
+    'hint-drawing':    'Click to place the end point  |  Esc to cancel',
+    'hint-dragging':   'Drag to reposition endpoint  |  Esc to cancel',
+    'hint-meas-count': (n) => `${n} measurement${n > 1 ? 's' : ''}  |  Drag endpoints to adjust`,
+    'error-url':       'Could not load image. The URL may be broken or the server may block direct linking.',
+    'error-file':      'Could not load image.',
+  },
+  sv: {
+    'calibrate':       'Kalibrera',
+    'measure':         'Mät',
+    'drop-image':      'Släpp en bild här',
+    'or':              'eller',
+    'choose-file':     'Välj fil',
+    'paste-url':       'eller klistra in en URL',
+    'enter-to-load':   'Tryck Enter för att ladda',
+    'load-to-begin':   'Ladda en bild för att börja',
+    'choose-image':    'Välj bild',
+    'measurements':    'Mätningar',
+    'clear-all':       'Rensa allt',
+    'new-image':       'Ny bild',
+    'kbd-hint':        '<strong>Esc</strong> — avbryt linje &nbsp; <strong>Del</strong> — ta bort sista',
+    'privacy':         '100% lokalt — dina bilder lämnar aldrig webbläsaren',
+    'dialog-title':    'Ange kalibreringsskala',
+    'dialog-desc':     'Linjen du ritade är <strong><span id="dialog-pixel-length">0</span> px</strong> lång i bilden. Ange dess verkliga längd för att ställa in skalan.',
+    'real-length':     'Verklig längd',
+    'unit':            'Enhet',
+    'cancel':          'Avbryt',
+    'set-scale':       'Ange skala',
+    'not-calibrated':  'Ej kalibrerad',
+    'scale-label':     'SKALA',
+    'hint-cal-new':    'Klicka och dra för att rita en kalibreringslinje',
+    'hint-cal-exists': 'Rita en ny kalibreringslinje för att uppdatera skalan  |  Dra ändpunkter för finjustering',
+    'hint-meas-empty': 'Klicka och dra för att rita en mätlinje  |  Dra ändpunkter för att justera',
+    'hint-drawing':    'Klicka för att placera slutpunkten  |  Esc för att avbryta',
+    'hint-dragging':   'Dra för att flytta ändpunkten  |  Esc för att avbryta',
+    'hint-meas-count': (n) => `${n} mätning${n > 1 ? 'ar' : ''}  |  Dra ändpunkter för att justera`,
+    'error-url':       'Kunde inte ladda bilden. URL:en kan vara felaktig eller servern kan blockera direktlänkar.',
+    'error-file':      'Kunde inte ladda bilden.',
+  },
+};
+
+const lang = (navigator.language || 'en').toLowerCase().startsWith('sv') ? 'sv' : 'en';
+
+function t (key) {
+  const val = (TRANSLATIONS[lang] || TRANSLATIONS.en)[key] ?? TRANSLATIONS.en[key] ?? key;
+  return typeof val === 'function' ? val : val;
+}
+
+function tf (key, ...args) {
+  const val = (TRANSLATIONS[lang] || TRANSLATIONS.en)[key] ?? TRANSLATIONS.en[key] ?? key;
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+function applyTranslations () {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+}
+
 // ── State ────────────────────────────────────────────────────────────────────
 
 const state = {
@@ -47,6 +138,7 @@ function $ (id) { return document.getElementById(id); }
 document.addEventListener('DOMContentLoaded', init);
 
 function init () {
+  applyTranslations();
   canvas = $('main-canvas');
   ctx    = canvas.getContext('2d');
 
@@ -139,7 +231,7 @@ function loadImageFromUrl (url) {
     state.imageUrl = url;
     onImageLoaded(img);
   };
-  img.onerror = () => setUrlError('Could not load image. The URL may be broken or the server may block direct linking.');
+  img.onerror = () => setUrlError(t('error-url'));
   img.src = url;
 }
 
@@ -156,7 +248,7 @@ function loadImage (src) {
     state.imageUrl = src;
     onImageLoaded(img);
   };
-  img.onerror = () => alert('Could not load image.');
+  img.onerror = () => alert(t('error-file'));
   img.src = src;
 }
 
@@ -340,7 +432,7 @@ function onKeyDown (e) {
 function startLine (imgPt) {
   state.drawState   = 'drawing';
   state.currentLine = { p1: imgPt, p2: imgPt };
-  setStatusBar('Click to place the end point  |  Esc to cancel');
+  setStatusBar(t('hint-drawing'));
 }
 
 function updateLine (imgPt) {
@@ -384,7 +476,7 @@ function startEndpointDrag (target) {
   state.dragOriginalPt = { ...line[target.endpoint] };
 
   canvas.style.cursor = 'grabbing';
-  setStatusBar('Drag to reposition endpoint  |  Esc to cancel');
+  setStatusBar(t('hint-dragging'));
 }
 
 function updateEndpointDrag (imgPt) {
@@ -558,8 +650,8 @@ function render () {
     const isDraggingCal = state.dragTarget?.type === 'calibration';
     const calLenPx = lineLengthPx(state.calibrationLine.p1, state.calibrationLine.p2);
     const calLabel = state.calibrationRealValue > 0
-      ? `SCALE: ${formatLength(state.calibrationRealValue, state.unit)}  (${Math.round(calLenPx)} px)`
-      : 'SCALE';
+      ? `${t('scale-label')}: ${formatLength(state.calibrationRealValue, state.unit)}  (${Math.round(calLenPx)} px)`
+      : t('scale-label');
     drawLine(state.calibrationLine, {
       color:     '#ef4444',
       lineWidth: 2,
@@ -718,7 +810,7 @@ function updateCalibrationStatus () {
   const dotClass    = 'dot ' + (calibrated ? 'calibrated' : 'uncalibrated');
   $('cal-dot').className        = dotClass;
   $('mobile-cal-dot').className = dotClass;
-  $('cal-text').textContent     = calibrated ? formatScale() : 'Not calibrated';
+  $('cal-text').textContent     = calibrated ? formatScale() : t('not-calibrated');
   $('btn-edit-scale').hidden    = !calibrated;
 }
 
@@ -753,13 +845,11 @@ function setStatusBar (text) {
 
 function modeHint () {
   if (state.mode === 'calibrate') {
-    return state.calibrationLine
-      ? 'Draw a new calibration line to update the scale  |  Drag endpoints to fine-tune'
-      : 'Click and drag to draw a calibration reference line';
+    return state.calibrationLine ? t('hint-cal-exists') : t('hint-cal-new');
   }
   return state.measurements.length === 0
-    ? 'Click and drag to draw a measurement line  |  Drag endpoints to adjust'
-    : `${state.measurements.length} measurement${state.measurements.length > 1 ? 's' : ''}  |  Drag endpoints to adjust`;
+    ? t('hint-meas-empty')
+    : tf('hint-meas-count', state.measurements.length);
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
